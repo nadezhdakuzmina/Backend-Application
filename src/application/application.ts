@@ -6,7 +6,10 @@ import { mainRouter } from './controller';
 
 import User from 'src/user';
 
+import Food from 'src/food';
+
 import { PORT } from '@constants';
+import CartItem from 'src/cart';
 
 export const app = express();
 
@@ -18,7 +21,7 @@ export const AppDataSource = new DataSource({
   password: 'topsecret',
   database: 'kuzmina',
   synchronize: true,
-  entities: [User],
+  entities: [User, Food, CartItem],
   subscribers: [],
   migrations: [],
 });

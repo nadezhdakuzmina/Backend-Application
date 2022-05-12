@@ -1,4 +1,7 @@
 import { User } from './models';
+import md5 from 'md5';
+import { SECRET } from '@constants';
+import CartItem from 'src/cart';
 
 import type { Request, Response } from 'express';
 import type { DataSource } from 'typeorm';
@@ -10,14 +13,24 @@ export const createUser = async (req: Request, res: Response, sourseData: DataSo
     password,
   } = req.body;
 
+  const cart = new CartItem();
+
   const user = new User();
   user.email = email;
   user.username = username;
-  user.password = password; // TODO: сделать шифрование
+  user.password = md5(password + SECRET);
 
   if (await sourseData.manager.findOneBy(User, { email })) {
     res.json({
       error: 'such email already exists',
+    });
+
+    return;
+  }
+
+  if (await sourseData.manager.findOneBy(User, { username })) {
+    res.json({
+      error: 'This username taken',
     });
 
     return;
