@@ -1,21 +1,21 @@
 import User from 'src/user';
-import Food from 'src/food';
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, ManyToMany, JoinColumn, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, JoinColumn } from 'typeorm';
 
-/* @Entity()
+@Entity()
 export class FrigeItem {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  status: boolean;
+  name: string;
 
-  @ManyToMany(() => User, (user) => user.friges)
+  @Column()
+  expires: string;
+
+  @Column()
+  foodType: string;
+
+  @ManyToOne(() => User, (user) => user.cards)
   @JoinColumn()
-  users: User[]
-
-  @ManyToMany(() => Food, (food) => food.friges)
-  @JoinTable()
-  foods: Food[]
-
-} */
+  user: User;
+}

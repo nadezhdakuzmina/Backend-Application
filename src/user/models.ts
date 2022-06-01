@@ -1,6 +1,6 @@
 import CartItem from 'src/cart';
-/* import FrigeItem from 'src/frige'; */
-import { Entity, Column, PrimaryGeneratedColumn, ManyToMany, JoinColumn } from 'typeorm';
+import FrigeItem from 'src/frige';
+import { Entity, Column, PrimaryGeneratedColumn, OneToMany, JoinColumn } from 'typeorm';
 
 @Entity()
 export class User {
@@ -15,12 +15,18 @@ export class User {
 
   @Column({ unique: true })
   email: string;
-  
-  @ManyToMany(() => CartItem, (cart) => cart.users )
-  @JoinColumn()
-  carts: CartItem[]  
 
-/*   @ManyToMany(() => FrigeItem, (frige) => frige.users )
+  @Column({ unique: true, nullable: true })
+  token: string;
+
+  @Column({ nullable: true })
+  tokenExpires: string;
+  
+  @OneToMany(() => CartItem, (card) => card.user)
   @JoinColumn()
-  friges: FrigeItem[] */
+  cards: CartItem[];
+
+  @OneToMany(() => FrigeItem, (frige) => frige.user)
+  @JoinColumn()
+  frigeItems: FrigeItem[];
 }

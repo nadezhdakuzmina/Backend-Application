@@ -14,11 +14,11 @@ export class Food {
 
   @Column()
   time: number;
-
-  @ManyToMany(() => CartItem, (cart) => cart.foods)
+/* 
+  @ManyToMany(() => CartItem, (cart) => cart.food)
   @JoinTable()
   carts: CartItem[]
-
+ */
 /*   @ManyToMany(() => CartItem, (frige) => frige.foods)
   @JoinTable()
   friges: CartItem[] */

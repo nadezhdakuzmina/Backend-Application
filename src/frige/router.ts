@@ -1,15 +1,16 @@
 import { Router } from 'express';
 
-//import { foodList, addFood, deleteFood, getFood } from './views';
+import { getList, addItem, deleteItem } from './views';
+import { authWrapper } from 'src/user';
 
 import type { DataSource } from 'typeorm';
 
 export const frigeRouter = (sourseData: DataSource) => {
   const router = Router();
 
- /*  router.get('/', (req, res) => foodList(req, res, sourseData));
-  router.post('/add', (req, res) => addFood(req, res, sourseData));
-  router.get('/delete', (req, res) => deleteFood(req, res, sourseData));
-  router.get('/get', (req, res) => getFood(req, res, sourseData)); */
+  router.get('/', (req, res) => authWrapper(getList)(req, res, sourseData));
+  router.post('/add', (req, res) => authWrapper(addItem)(req, res, sourseData));
+  router.post('/delete', (req, res) => authWrapper(deleteItem)(req, res, sourseData));
+
   return router;
 }

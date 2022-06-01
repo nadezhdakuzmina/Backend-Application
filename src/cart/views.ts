@@ -1,98 +1,88 @@
-import { CartItem } from './models';
+import { Card } from './models';
+
+import { User } from 'src/user';
 
 import type { Request, Response } from 'express';
 import type { DataSource } from 'typeorm';
 
-export const changeStatus = async (req: Request, res: Response, sourseData: DataSource) => {
-  const {
-    foodID,
-    isChecked
-  } = req.body;
-
-  const cartItemRepository = sourseData.getRepository(CartItem);
-  const card = await cartItemRepository.findOne({
-    relations: ['foods'],
-    where: {
-      foods: {
-        id: foodID,
-      },
-    },
-  });
-
-  if (card) {
-    res.json({
-      error: `cannot find item with id='${foodID}'`,
-    });
-
-    return;
-  }
-
-  card.isChecked = isChecked
-
-  await sourseData.manager.save(card);
-
-  res.json({
-    message: "successfuly",
-  });
-};
-
-
 export const addItem = async (req: Request, res: Response, sourseData: DataSource) => {
   const {
-    foodID,
-    userID
+    name,
+    token,
   } = req.body;
 
-  const user = 'Это твой юзер, его нужно найти';
-  const food = 'Это твой фуд, его нужно найти тоже';
+  const user = await sourseData.manager.findOneBy(User, { token });
 
-  const card = new CartItem();
-
-  // ВНИМАНИЕ!!! @ts-ignore я написал для примера, убери его когда найдешь пользователя и фуд
-
-  // @ts-ignore
-  card.foods = [food];
-
-  // @ts-ignore
-  card.users = [user];
-
+  const card = new Card();
+  card.user = user;
+  card.name = name;
   card.isChecked = false;
 
-  await sourseData.manager.save(card);
+  const { id } = await sourseData.manager.save(card);
 
   res.json({
-    message: "successfuly",
+    message: "created successfuly",
+    id,
   });
 };
 
 export const deleteItem = async (req: Request, res: Response, sourseData: DataSource) => {
   const {
-    foodID,
-    userID
+    id,
+    token,
   } = req.body;
 
-  const cartItemRepository = sourseData.getRepository(CartItem);
-  const card = await cartItemRepository.findOne({
-    relations: ['foods', 'users'],
-    where: {
-      foods: {
-        id: foodID
-      },
-      users: {
-        id: userID
-      },
-    },
+  const user = await sourseData.manager.findOneBy(User, { token });
+  const card = await sourseData.manager.findOneBy(Card, { user, id });
+
+  if (!card) {
+    res.json({
+      error: `couldn't find such item with id='${id}'`,
+    });
+
+    return;
+  }
+
+  await sourseData.manager.remove(card);
+
+  res.json({
+    message: "removed successfuly",
   });
-await sourseData.manager.remove(card);
-res.json({
-  message: "successfuly",
-});
 };
 
 export const cartList = async (req: Request, res: Response, sourseData: DataSource) => {
-  const cart = await sourseData.manager.find(CartItem);
+  const token = req.query.token as string;
+
+  const user = await sourseData.manager.findOneBy(User, { token });
+  const items = await sourseData.manager.findBy(Card, { user });
 
   res.json({
-    cart: cart,
+    items,
+  });
+};
+
+export const changeStatus = async (req: Request, res: Response, sourseData: DataSource) => {
+  const {
+    id,
+    token,
+    status,
+  } = req.body;
+
+  const user = await sourseData.manager.findOneBy(User, { token });
+  const card = await sourseData.manager.findOneBy(Card, { user, id });
+
+  if (!card) {
+    res.json({
+      error: `couldn't find such item with id='${id}'`,
+    });
+
+    return;
+  }
+
+  card.isChecked = !!status;
+  await sourseData.manager.save(card);
+
+  res.json({
+    message: "status changed successfuly",
   });
 };

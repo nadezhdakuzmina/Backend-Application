@@ -1,15 +1,17 @@
 import 'reflect-metadata';
 import express from 'express';
-import { DataSource } from 'typeorm';
-
-import { mainRouter } from './controller';
+import cors from 'cors';
+import bodyParser from 'body-parser';
 
 import User from 'src/user';
+import Card from 'src/cart';
+// import Food from 'src/food';
+import FrigeItem from 'src/frige';
 
-import Food from 'src/food';
+import { DataSource } from 'typeorm';
+import { mainRouter } from './controller';
 
 import { PORT } from '@constants';
-import CartItem from 'src/cart';
 
 export const app = express();
 
@@ -21,14 +23,15 @@ export const AppDataSource = new DataSource({
   password: 'topsecret',
   database: 'kuzmina',
   synchronize: true,
-  entities: [User, Food, CartItem],
+  entities: [User, /* Food, */ Card, FrigeItem],
   subscribers: [],
   migrations: [],
 });
 
 AppDataSource.initialize()
   .then((connection) => app.listen(PORT, () => {
-    app.use(express.json());
+    app.use(bodyParser.json());
+    app.use(cors())
     app.use(mainRouter(connection));
     console.log(`Application listening on port ${PORT}`);
   }))

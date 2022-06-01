@@ -1,21 +1,24 @@
 import User from 'src/user';
 import Food from 'src/food';
-import { Entity, Column, PrimaryGeneratedColumn, OneToOne, ManyToMany, JoinColumn, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn, ManyToOne, ManyToMany, JoinColumn } from 'typeorm';
 
 @Entity()
-export class CartItem {
+export class Card {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   isChecked: boolean;
 
-  @ManyToMany(() => User, (user) => user.carts)
-  @JoinTable()
-  users: User[]
+  @Column()
+  name: string;
 
+  @ManyToOne(() => User, (user) => user.cards)
+  @JoinColumn()
+  user: User;
+/* 
   @ManyToMany(() => Food, (food) => food.carts)
-  @JoinTable()
+  @JoinColumn()
   foods: Food[]
-
+ */
 }

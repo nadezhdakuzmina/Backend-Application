@@ -1,84 +1,79 @@
-/* import { FrigeItem } from './models'; */
+import { FrigeItem } from './models';
+import { User } from 'src/user';
 
 import type { Request, Response } from 'express';
 import type { DataSource } from 'typeorm';
-/* 
-export const changeStatus = async (req: Request, res: Response, sourseData: DataSource) => {
-  const {
-    foodID,
-    isChecked
-  } = req.body;
-
-  const frigeItemRepository = sourseData.getRepository(FrigeItem);
-  const frige = await frigeItemRepository.findOne({
-    relations: ['foods'],
-    where: {
-      foods: {
-        id: foodID,
-      },
-    },
-  });
-
-};
-
 
 export const addItem = async (req: Request, res: Response, sourseData: DataSource) => {
   const {
-    foodID,
-    userID
+    name,
+    expires,
+    token,
+    foodType,
   } = req.body;
 
-  const cartItemRepository = sourseData.getRepository(CartItem);
-  const card = await cartItemRepository.findOne({
-    relations: ['foods', 'users'],
-    where: {
-      foods: {
-        id: foodID
-      },
-      users: {
-        id: userID
-      },
-    },
-  });
+  if (!name || !expires || !foodType) {
+    res.json({
+      error: '`name`, `foodType` and `expires` expacted',
+    });
 
-  card.isChecked = isChecked;
+    return;
+  }
 
-  await sourseData.manager.save(card);
+  if (isNaN(Number(expires))) {
+    res.json({
+      error: 'invalid expires date, should be integer',
+    });
+
+    return;
+  }
+
+  const user = await sourseData.manager.findOneBy(User, { token });
+
+  const frigeItem = new FrigeItem();
+  frigeItem.name = name;
+  frigeItem.expires = String(parseInt(expires, 10));
+  frigeItem.user = user;
+  frigeItem.foodType = foodType;
+
+  await sourseData.manager.save(frigeItem);
 
   res.json({
-    message: "successfuly",
+    message: "created successfuly",
   });
 };
 
 export const deleteItem = async (req: Request, res: Response, sourseData: DataSource) => {
   const {
-    foodID,
-    userID
+    id,
+    token
   } = req.body;
 
-  const cartItemRepository = sourseData.getRepository(CartItem);
-  const card = await cartItemRepository.findOne({
-    relations: ['foods', 'users'],
-    where: {
-      foods: {
-        id: foodID
-      },
-      users: {
-        id: userID
-      },
-    },
-  });
-await sourseData.manager.remove(card);
-res.json({
-  message: "successfuly",
-});
-};
+  const user = await sourseData.manager.findOneBy(User, { token });
+  const frigeItem = await sourseData.manager.findOneBy(FrigeItem, { user, id });
 
-export const cartList = async (req: Request, res: Response, sourseData: DataSource) => {
-  const cart = await sourseData.manager.find(CartItem);
+  if (!frigeItem) {
+    res.json({
+      error: `couldn't find such item with id='${id}'`,
+    });
+
+    return;
+  }
+
+  await sourseData.manager.remove(frigeItem);
 
   res.json({
-    cart: cart,
+    message: "deleted successfuly",
   });
 };
- */
+
+export const getList = async (req: Request, res: Response, sourseData: DataSource) => {
+  const token = req.query.token as string;
+
+  const user = await sourseData.manager.findOneBy(User, { token });
+  const items = await sourseData.manager.findBy(FrigeItem, { user });
+
+  res.json({
+    items,
+  });
+};
